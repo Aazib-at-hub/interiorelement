@@ -1,4 +1,4 @@
-import { motion, useInView, useMotionValue, useSpring } from "framer-motion";
+import { motion, useInView, useMotionValue, animate, useTransform } from "framer-motion";
 import { useEffect, useRef } from "react";
 import aboutImage from "@/assets/about-interior.jpg";
 
@@ -10,26 +10,17 @@ interface AnimatedCounterProps {
 
 const AnimatedCounter = ({ target, suffix = "", duration = 2 }: AnimatedCounterProps) => {
   const ref = useRef<HTMLSpanElement>(null);
-  const isInView = useInView(ref, { once: true, margin: "-100px" });
-  const motionValue = useMotionValue(0);
-  const springValue = useSpring(motionValue, { duration: duration * 1000, bounce: 0 });
+  const isInView = useInView(ref, { once: true, margin: "0px" });
+  const count = useMotionValue(0);
+  const rounded = useTransform(count, (latest) => Math.floor(latest) + suffix);
 
   useEffect(() => {
     if (isInView) {
-      motionValue.set(target);
+      animate(count, target, { duration: duration, ease: "easeOut" });
     }
-  }, [isInView, target, motionValue]);
+  }, [isInView, target, count, duration]);
 
-  useEffect(() => {
-    const unsubscribe = springValue.on("change", (latest) => {
-      if (ref.current) {
-        ref.current.textContent = Math.floor(latest) + suffix;
-      }
-    });
-    return unsubscribe;
-  }, [springValue, suffix]);
-
-  return <span ref={ref}>0{suffix}</span>;
+  return <motion.span ref={ref}>{rounded}</motion.span>;
 };
 
 const stats = [
